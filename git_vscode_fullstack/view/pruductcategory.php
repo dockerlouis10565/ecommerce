@@ -117,7 +117,7 @@
                         <li><a class="dropdown-item" href="controller.php?action=occassional">occassional items</a></li>
                     </ul>
                 </div>
-                
+
                 <input type="search" name="search" placeholder="search" style="height: 95%; border-radius: 10px;" >
                 <div class="dropdown">
                     <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"> settings </button>
@@ -183,6 +183,7 @@
                     </div>
                 </div>
             </div>
+            <div></div>
         </main>
         <footer></footer>
         <script src="productcategoryjs.js"></script>
