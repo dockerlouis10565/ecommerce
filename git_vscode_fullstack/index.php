@@ -32,6 +32,8 @@
             align-items: center; 
             border-radius: 15px; 
             padding: 5px;
+            margin-top: auto;
+            
         }
         
         </style>
@@ -46,12 +48,13 @@
                 <div> 
                     <div style="padding: 20px; color: blue;font-size: 32px;"> client login credentials </div>
                     <form method ="POST" action ="#" >
-                        Email <input type="email" name="email"class="form-control" id="exampleFormControlInput1" placeholder="name@example.com"><br>
-                        Password <input type="password" name="password" class="form-control" id="exampleFormControlInput1" placeholder="********"><br>
+                        Email <input type="email" name="email"class="form-control" id="exampleFormControlInput1" placeholder="name@example.com" required><br>
+                        Password <input type="password" name="password" class="form-control" id="exampleFormControlInput1" placeholder="********" required><br>
                         <input type="submit" name="submit" value="login" style="background-color: dodgerblue; border-radius: 5px;margin: 0 px;">
                     </form>  
                 </div>
             </div>
+            <button style="border-radius: 5px;float: left;background-color: dodgerblue; width: 100px; margin-bottom: auto; margin-top: 15px;"> signup </button>
         </div>
     </body>
 </html>

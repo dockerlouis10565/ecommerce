@@ -110,26 +110,30 @@
                 <div class="dropdown">
                     <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"> product categories </button>
                     <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="#">Action</a></li>
-                        <li><a class="dropdown-item" href="#">Another </a></li>
-                        <li><a class="dropdown-item" href="#">Something</a></li>
+                        <li><a class="dropdown-item" href="controller.php?action=beauty_and_skincare">beauty and skincare</a></li>
+                        <li><a class="dropdown-item" href="controller.php?action=clothing_and_accessories">clothing and accessories </a></li>                       
+                        <li><a class="dropdown-item" href="controller.php?action=footwear">footwear</a></li>
+                        <li><a class="dropdown-item" href="controller.php?action=household">household itemsr</a></li>
+                        <li><a class="dropdown-item" href="controller.php?action=occassional">occassional items</a></li>
                     </ul>
                 </div>
+                
                 <input type="search" name="search" placeholder="search" style="height: 95%; border-radius: 10px;" >
                 <div class="dropdown">
                     <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"> settings </button>
                     <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="#">Action</a></li>
-                        <li><a class="dropdown-item" href="#">Another </a></li>
-                        <li><a class="dropdown-item" href="#">Something </a></li>
+                        <li><a class="dropdown-item" href="#">theme</a></li>
+                        <li><a class="dropdown-item" href="#"> client preferrences</a></li>
+                        <li><a class="dropdown-item" href="#">other </a></li>
                     </ul>
                 </div>
                 <div class="dropdown">
                     <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"> client info </button>
                     <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="#">Action</a></li>
-                        <li><a class="dropdown-item" href="#">Another </a></li>
-                        <li><a class="dropdown-item" href="#">Something</a></li>
+                        <li><a class="dropdown-item" href="#">profile</a></li>
+                        <li><a class="dropdown-item" href="#">edit profile </a></li>
+                        <li><a class="dropdown-item" href="#"> client cart</a></li>
+                        <li><a class="dropdown-item" href="#">logout</a></li>
                     </ul>
                 </div>
             </div>
@@ -145,8 +149,9 @@
                     <div class="card">
                         <img src="..." class="card-img-top" alt="...">
                         <div class="card-body">
-                            <h5 class="card-title">Card title</h5>
-                            <p class="card-text">This is a longer card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+                            <h5 class="gender">gender:M</h5>
+                            <h5 class="price"> price:200MAD</h5>
+                            <h5 class="genre">genre:casual</h5>
                         </div>
                     </div>
                 </div>
@@ -178,9 +183,7 @@
                     </div>
                 </div>
             </div>
-            
         </main>
-       
         <footer></footer>
         <script src="productcategoryjs.js"></script>
     </body>

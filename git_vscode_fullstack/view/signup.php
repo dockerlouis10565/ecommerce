@@ -46,10 +46,10 @@
                 <div> 
                     <div style="padding: 20px; color: blue;font-size: 32px;"> client signup credentials </div>
                     <form method ="POST" action ="#" >
-                        First Name <input type="text" name="firstname" class="form-control" id="exampleFormControlInput1" placeholder="John"><br>
-                        Last Name <input type="text" name="lastname" class="form-control" id="exampleFormControlInput1" placeholder="Doe"><br>
-                        Email <input type="email" name="email"class="form-control" id="exampleFormControlInput1" placeholder="name@example.com"><br>
-                        Password <input type="password" name="password" class="form-control" id="exampleFormControlInput1" placeholder="********"><br>
+                        First Name <input type="text" name="firstname" class="form-control" id="exampleFormControlInput1" placeholder="John" required><br>
+                        Last Name <input type="text" name="lastname" class="form-control" id="exampleFormControlInput1" placeholder="Doe" required><br>
+                        Email <input type="email" name="email"class="form-control" id="exampleFormControlInput1" placeholder="name@example.com" required><br>
+                        Password <input type="password" name="password" class="form-control" id="exampleFormControlInput1" placeholder="********" required><br>
                         <input type="submit" name="submit" value="signup" style="background-color: dodgerblue; border-radius: 5px;margin: 0 px;">
                     </form>  
                 </div>
