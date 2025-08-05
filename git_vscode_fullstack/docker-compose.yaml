@@ -1,0 +1,68 @@
+version: '3.8'
+
+
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: web_app
+    ports:
+      - "8080:80"
+    volumes:
+      - type: bind
+        source: ./src
+        target: /var/www/html
+        consistency: cached
+    environment:
+      DB_HOST: db
+      DB_NAME: ecommerce_db
+      DB_USER: root
+      DB_PASS: ${DB_PASS}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  db:
+    image: mysql:8.0
+    container_name: db_service
+    restart: always
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASS}
+      MYSQL_DATABASE: ecommerce_db
+    volumes:
+      - mysql_dbdata:/var/lib/mysql
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  #phpmyadmin:
+  #  image: phpmyadmin/phpmyadmin
+   # container_name: phpmyadmin_ui
+  #  restart: always
+   # ports:
+   #   - "127.0.0.1:8081:80"
+   # environment:
+     # PMA_HOST: db
+     # MYSQL_ROOT_PASSWORD: ${DB_PASS}
+    #depends_on:
+    #  - db
+    #networks:
+     # - app-network
+
+volumes:
+  mysql_dbdata:
+    name: mysql_dbdata
+
+networks:
+  app-network:
+    driver: bridge

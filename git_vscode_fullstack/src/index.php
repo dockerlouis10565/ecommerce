@@ -47,7 +47,7 @@
             <div class="login-content">
                 <div> 
                     <div style="padding: 20px; color: blue;font-size: 32px;"> client login credentials </div>
-                    <form method ="POST" action ="#" >
+                    <form method ="POST" action ="../view/productcategory.php" >
                         Email <input type="email" name="email"class="form-control" id="exampleFormControlInput1" placeholder="name@example.com" required><br>
                         Password <input type="password" name="password" class="form-control" id="exampleFormControlInput1" placeholder="********" required><br>
                         <input type="submit" name="submit" value="login" style="background-color: dodgerblue; border-radius: 5px;margin: 0 px;">

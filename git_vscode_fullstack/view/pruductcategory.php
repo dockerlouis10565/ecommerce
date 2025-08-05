@@ -183,7 +183,7 @@
                     </div>
                 </div>
             </div>
-            <div></div>
+            
         </main>
         <footer></footer>
         <script src="productcategoryjs.js"></script>

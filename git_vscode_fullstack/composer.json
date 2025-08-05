@@ -1,0 +1,12 @@
+{
+  "name": "louis/docker-php-app",
+  "description": "Simple PHP app for Docker testing",
+  "require": {
+    "vlucas/phpdotenv": "^5.5"
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": "src/"
+    }
+  }
+}
