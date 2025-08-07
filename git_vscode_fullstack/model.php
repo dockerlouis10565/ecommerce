@@ -17,7 +17,7 @@ function getCn(){
         }
     }
 }
-#function fetchproduct()
+function fetchproduct()
 
 
     
