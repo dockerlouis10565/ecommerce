@@ -1,0 +1,34 @@
+# error 1
+
+ale/cv.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.vscode/extensions/xdebug.php-debug-1.37.0/node_modules/moment/locale/cy.js', LF will be replaced by CRLF the next time Git touches it 
+warning: in the working copy of '.vscode/extensions/xdebug.php-debug-1.37.0/node_modules/moment/locale/da.js', LF will be replaced by CRLF the next time Git touches it 
+warning: in the working copy of '.vscode/extensions/xdebug.php-debug-1.37.0/node_modules/moment/locale/de-at.js', LF will be replaced by CRLF the next time Git touches it
+
+#solutions
+----->  (1) execute "git config --global core.autocrlf true"
+-----> (2) you create a .gitattribute file in the working directory and add any of these content
+
+            (a)   * text=auto
+
+            (b)   *.js text eol=lf
+              *.json text eol=lf
+              *.md text eol=lf
+
+# error 2
+
+error: open("AppData/Local/Comms/UnistoreDB/USS.jtx"): Permission denied
+fatal: adding files failed
+
+#solutions
+
+option 1:
+
+ add these content to the  .gitignore file
+        AppData/
+        .vscode/extensions/
+        *.log
+option 2:
+ execute "git rev-parse --show-toplevel" on the terminal where your working folder is.
+ if it display your working folder, then everything is fine
+ if not, cut-and-paste the .git folder from the repo displayed in the terminal to your working directory.

@@ -1,0 +1,105 @@
+html,body {
+display: grid;
+grid-template-areas:
+    "header header header"
+    "section main main"
+    "footer footer footer";
+grid-template-columns: 1fr 9fr 1fr;
+grid-template-rows: 2fr 10fr 3fr;
+height: 100vh;
+width: 100vw;
+margin: 0;
+}
+header {
+display: flex;
+flex-flow: column nowrap;
+grid-area: header;
+justify-content: space-around;
+align-items: center;
+border: 2px solid brown;
+}
+header .headerdiv {
+display: flex;
+flex-flow: row nowrap;
+justify-content: space-evenly;
+align-items: center;
+width: 90%;
+min-height: 40px;
+margin: 3px 15px;
+border: 1px solid black;
+border-radius: 5px;
+}
+header .headerdiv .dropdown {
+display: flex;
+align-items: center;
+justify-content: space-evenly;
+height: 80%;
+min-width: 40px; 
+border-radius: 5px;
+border: 0px solid blue;
+}
+section {
+display: grid;
+grid-area: section;
+border: 5px solid green;
+}
+main  {
+display: flex;
+flex-flow: row nowrap;
+justify-content: center;
+align-items: center;
+grid-area: main;
+border: 5px solid yellow;
+}
+.maindiv {
+width: 80%;
+display: flex;
+flex-flow: row wrap;
+justify-content: center;
+align-items: flex-start;
+margin: auto;
+}
+footer {
+display: grid;
+grid-area: footer;
+margin: 0px;
+border: 2px solid blue;
+}
+.imageframe{
+display: flex;
+flex-flow: row wrap;
+justify-content: flex-start;
+align-items: center;
+margin: auto;
+min-height: 120px;
+min-width: 120px;
+border: 0px;
+
+}
+.image{
+object-fit: contain;
+max-height: 100px;
+max-width: 100px;
+margin: auto;
+margin: 0px;
+border: 0px;
+}
+.container {
+display: flex;
+justify-content: space-around;
+align-items: center;
+height: 100vh;
+flex-direction:column;
+}
+.login-content {
+border: 2px solid blue;
+background-color: aqua;
+display:flex;
+flex-direction: column; 
+height: auto; 
+width: 500px;
+justify-content: center;
+align-items: center; 
+border-radius: 15px; 
+padding: 5px;
+}

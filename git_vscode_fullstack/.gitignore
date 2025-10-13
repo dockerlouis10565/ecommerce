@@ -1,0 +1,45 @@
+# === Environment & Secrets ===
+.env
+.env.local
+.env.production
+
+# === Logs & Runtime ===
+*.log
+*.pid
+/tmp/
+.cache/
+.phpunit.result.cache
+
+# === Vendor & Composer ===
+/vendor/
+/composer.lock
+
+# === Docker ===
+db_data/
+*.db
+*.sqlite
+Dockerfile~  # temp edit files
+docker-compose.override.yaml
+
+# === IDE & OS Files ===
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# === Media Uploads (Optional) ===
+src/uploads/
+src/media/
+
+# === Testing ===
+tests/_output/
+tests/_data/
+
+# === CI/CD — Optional workflow cache ===
+.github/workflows/*.yaml~
+node_modules/  # if using frontend stack
+
+# === Misc ===
+*.bak
+*.swp
+*.swo

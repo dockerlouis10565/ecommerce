@@ -1,0 +1,7 @@
+name = "my-worker"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+[hyperdrive]
+binding = "MY_DB"
+id = "<your-hyperdrive-id>"

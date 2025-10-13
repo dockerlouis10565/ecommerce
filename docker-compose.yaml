@@ -1,0 +1,277 @@
+# version: '3.8' version is obsolete in docker compose v2 and above
+#what makes services different are the following:
+# 1. the commands "command" and "entrypoint" that define what the container does when it starts.
+# 2. Isolation: Each service runs in its own container, isolated from others.
+# 3. image: specifies the Docker image to use for the service.
+# 4. ports: maps container ports to host ports, allowing external access.
+# 5. volumes: mounts host directories or files into the container for persistent storage or configuration.
+# 6. environment: sets environment variables for the container.
+# 7. depends_on: defines dependencies between services, ensuring the correct startup order.
+# 8. networks: connects services to specific Docker networks for communication.
+name: ecommerce
+
+secrets:
+  ssl-certs:
+    file: ./server.cert
+  ssl-key:
+    file: ./server.key
+
+services:
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASS}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_DATABASE: ${DB_NAME}
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network 
+  app:
+    image: httpd:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: app_service
+    networks:
+      - app-network
+    depends_on:
+      - db
+      - redis
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 5s
+    env_file:
+      - .env
+    restart: always
+    ports:
+      - "8080:80"
+    volumes:
+      - app_data:/var/www/html
+      - ./server.cert:/etc/ssl/certs/server.cert:ro
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana_service
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana_dbdata:/var/lib/grafana
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 5s
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - app-network
+
+  adminer:
+    image: adminer
+    ports:
+      - "8081:8080"
+    networks:
+      - app-network
+
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - "8025:8025"
+    networks:
+      - app-network
+
+  traefik:
+    image: traefik:v2.9
+    container_name: traefik_service
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8082:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      app:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  auth:
+    image: keycloak/keycloak:latest
+    container_name: auth_service
+    ports:
+      - "8083:8080"
+    environment:
+      DB_VENDOR: mysql
+      DB_ADDR: db
+      DB_DATABASE: keycloak
+      DB_USER: root
+      DB_PASSWORD: secret
+    depends_on:
+      db:
+        condition: service_healthy
+      app:
+        condition: service_healthy
+    restart: always
+    networks:
+      - app-network
+
+volumes:
+  app_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: /c/Data/app_data
+      o: bind
+  db_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: /c/Data/mysql
+      o: bind
+  grafana_dbdata:
+    driver: local
+    driver_opts:
+      type: none
+      device: /c/Data/grafana_dbdata
+      o: bind
+
+networks:
+  app-network:
+    driver: overlay
+    attachable: true
+    enable_ipv4: true
+    enable_ipv6: true
+
+
+
+# A service is an abstract definition of a computing resource within an application which can be scaled or replaced independently from other components. what is it trying to say here?
+#Great question, Louis. That sentence is describing a core concept in software architecture, especially in service-oriented or microservices-based systems. Let’s break it down into plain language:
+
+#🧩 What It’s Saying
+#"A service is an abstract definition" → It’s not a physical thing like a server or a file. It’s a conceptual unit—think of it as a role or function that performs a specific task in an application.
+
+#"of a computing resource within an application" → This service might handle something like user authentication, image processing, or order fulfillment. It’s a piece of the app that does a job.
+
+#"which can be scaled or replaced independently" → You can increase its capacity (scale it) or swap it out for a better version (replace it) without affecting the rest of the app. That’s the beauty of modular design.
+
+#"from other components" → It’s loosely coupled. Other parts of the app don’t need to know how it works internally—they just interact with it through a defined interface.
+
+#🛠️ Real-World Analogy
+#Imagine a food delivery app:
+
+#The payment service handles transactions.
+
+#The location service tracks drivers.
+
+#The notification service sends updates.
+
+#Each of these can be updated, scaled, or replaced independently. For example, you could switch from sending SMS notifications to push notifications without touching the payment or location logic.
+
+#💡 Why It Matters (especially for you)
+#Since you're building production-grade PHP apps and exploring containerization, this idea is key to:
+
+#Designing maintainable and scalable systems.
+
+#Using Docker to isolate services (e.g., nginx, PHP-FPM, Redis).
+
+#Refactoring your app so each part can evolve without breaking others.
+
+#Want to see how this maps to your current PHP controller setup or Docker networking? I can walk you through it.
+
+#List all possible services that can be define in docker compose
+#In Docker Compose, a service is any containerized component of your application. You define services under the services: key in your docker-compose.yml file. There’s no fixed list of “possible services”—you can define any number of custom services, each representing a container built from an image or Dockerfile.
+
+#But to help you visualize what’s commonly used, here’s a categorized breakdown of typical services you might define:
+
+#🧱 Core Application Services
+#These are the backbone of your app:
+
+#web: Nginx, Apache, or PHP-FPM
+
+#app: Your main backend (e.g. PHP, Node.js, Python)
+
+#frontend: React, Vue, Angular static build server
+
+#🗄️ Database Services
+#Used for persistent storage:
+
+#db: PostgreSQL, MySQL, MariaDB
+
+#mongo: MongoDB
+
+#redis: Redis (for caching or session storage)
+
+#elasticsearch: For search indexing
+
+#🔐 Authentication & Security
+#keycloak: Identity and access management
+
+#oauth: Custom OAuth2 provider
+
+#vault: HashiCorp Vault for secrets management
+
+#📦 Messaging & Queueing
+#rabbitmq: Message broker
+
+#kafka: Event streaming
+
+#celery: Task queue (often paired with Redis or RabbitMQ)
+
+#🧪 Dev & Testing Tools
+#selenium: Browser automation
+
+#test-runner: Runs unit/integration tests
+
+#mock-server: Simulates APIs
+
+#📊 Monitoring & Logging
+#prometheus: Metrics collection
+
+#grafana: Dashboard visualization
+
+#logstash / fluentd: Log aggregation
+
+#jaeger / zipkin: Distributed tracing
+
+#🧰 Utility Services
+#adminer / phpmyadmin: DB GUI
+
+#mailhog: Email testing
+
+#minio: S3-compatible object storage
+
+#traefik / nginx-proxy: Reverse proxy/load balancer
