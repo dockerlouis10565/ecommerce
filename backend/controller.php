@@ -13,6 +13,7 @@ $_SESSION["user"] = [
     "email"     => $email,
     "password"  => $password
 ];
+#"C:\Data\mysql\female\beauty_and_skincare\casual\teen_youngAdult\image.jpeg"
  $_SESSION["display_favorite"]=false;
 switch ($act) {
         case "signup":
@@ -205,16 +206,18 @@ switch ($act) {
                     $_SESSION['payment_status'] = "Payment of $price MAD via {$payment_credentials['payment_method']} was successful.";
                     $cart = isset($_COOKIE["cart"]) ? json_decode($_COOKIE["cart"], true) : [];
                     $array = [];
+                    $array_stocks = [];
                     foreach($cart as $item) {
                         $arr0 = (DIRECTORY_SEPARATOR === '/') ? explode('/', $item) : explode('\\', $item);
-                        $arr2 = explode('-', $arr0[7]);
-                        $arr1 = array($arr0[4],$arr0[3],$arr0[5],$arr0[6],$arr0[7]);
-                        $array[] = $arr1;
+                        $array_stocks[] = array($arr0[4],$arr0[3],$arr0[5],$arr0[6]);
+                        $array[] = array($arr0[4],$arr0[3],$arr0[5],$arr0[6],$arr0[7]);
                     }
-                    
+                    $split = isset($_COOKIE["cart"]) ? json_decode($_COOKIE["cart"], true) : [];
                     $gather_credentials = array($payment_credentials['email'], $payment_credentials['shipping_address'], $payment_credentials['postal_code'], $payment_credentials['mobile_number'], $payment_credentials['account_name'], $payment_credentials['payment_method'],date('Y-m-d H:i:s'),$price);
                     $gather_credentials[] = $arr['transaction_id'];
                     record_purchase($array, $gather_credentials);
+                    update_stocks($array_stocks);
+                    #$gather_credentials[] = "C:\Data\mysql\female\beauty_and_skincare\casual\teen_youngAdult\image.jpeg";
                     unset($_COOKIE["cart"]);
                     setcookie("cart", "", time() - 3600, "/"); 
                     $_SESSION["cart"] = [];

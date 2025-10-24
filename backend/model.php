@@ -241,6 +241,37 @@ function record_purchase($a,$b){
     }
    
 }
+function gather_stock_info($path){
+    $reelpath = realpath($path);
+    if ($reelpath && is_file($reelpath) && $reelpath !== "." && $reelpath !== "..") {
+        #finding its path
+        $parent = dirname($reelpath); 
+        $split = explode(DIRECTORY_SEPARATOR, $parent);
+        $array = array($split[4],$split[3],$split[5],$split[6]);
+        $stmt = getCn();
+        $fetched = $stmt->prepare("SELECT quantity FROM `stocks` WHERE product = :product AND gender = :gender AND genre = :genre AND agegroup = :agegroup");
+        $fetched->execute(["product"=>$split[4],"gender"=>$split[3],"genre"=>$split[5],"agegroup"=>$split[6]]);
+        $fetched= $fetched->fetch(PDO::FETCH_COLUMN);
+        if (empty($fetched) && $fetched < 0) {
+            $quantity = rand(10000,100000);
+            $insert = $stmt->prepare("INSERT INTO `stocks` (product, gender, genre, agegroup, quantity) VALUES (:product, :gender, :genre, :agegroup, :quantity)");
+            $insert->execute(["product"=>$split[4],"gender"=>$split[3],"genre"=>$split[5],"agegroup"=>$split[6],"quantity"=>$quantity]);
+        }
+
+    }else if($reelpath == '.' || $reelpath == '..' || !is_file($reelpath)){
+        #do nothing
+    }
+    else{
+       $dirpointer = opendir($reelpath);
+       while (($repo = readdir($dirpointer)) !== false) {
+            if ($repo === '.' || $repo === '..') continue;
+            else{
+                $subpath = $reelpath . DIRECTORY_SEPARATOR . $repo;
+                $gathered = gather_stock_info($subpath); 
+            }
+        }
+    }
+}
 function uploadFiles($path) {
     $reelpath = realpath($path);
     if (!$reelpath || !is_dir($reelpath)) return;
@@ -377,7 +408,19 @@ try {
         error_log("Payment error: " . $ex->getMessage());
         return ['success' => false, 'error' => $ex->getMessage()];
 }
-
+#$gather_credentials[] = "C:\Data\mysql\female\beauty_and_skincare\casual\teen_youngAdult\image.jpeg";
+}
+function update_stocks($arr){
+   if(empty($arr)) return;
+   foreach($arr as $item) {
+      $stmt = getCn();
+      $update = $stmt->prepare("UPDATE `stocks` SET quantity = quantity - 1 WHERE product = :product AND gender = :gender AND genre = :genre AND agegroup = :agegroup");
+      $update->bindParam(':product', $item[0]);
+      $update->bindParam(':gender', $item[1]);
+      $update->bindParam(':genre', $item[2]);
+      $update->bindParam(':agegroup', $item[3]);
+      $update->execute();
+   }
 }
 function process_payment($payment_credentials){
     if($payment_credentials['payment_method'] === 'credit_card'){
