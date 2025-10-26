@@ -171,10 +171,10 @@ volumes:
 
 networks:
   app-network:
-    driver: overlay
-    attachable: true
-    enable_ipv4: true
-    enable_ipv6: true
+    #driver: overlay
+    #attachable: true
+    #enable_ipv4: true
+    #enable_ipv6: true
 
 
 

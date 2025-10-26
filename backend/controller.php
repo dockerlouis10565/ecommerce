@@ -20,6 +20,7 @@ switch ($act) {
             setcookie("user", json_encode($_SESSION["user"]), time() + 3600*24, "/");
             header("Location: ../frontend/login.php?email=" . urlencode($email) . "&password=" . urlencode($password));
             break;
+            exit;
         case "login":
             $tables = showtables();
             foreach ($tables as $table) {    
@@ -241,6 +242,11 @@ switch ($act) {
             session_unset();
             session_destroy();
             header("Location: ../frontend/category.php");
+            exit;
+        case "getStockData":
+            $data = getStockData();
+            header('Content-Type: application/json');
+            return json_encode($data);
             exit;
         default:
             $_SESSION['product_paths'] = fetchproducts($act);

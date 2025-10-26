@@ -12,6 +12,7 @@ $message = isset($_GET['error']) ? htmlspecialchars($_GET['error']) : '';
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
         <!-- Bootstrap JavaScript (optional, for interactive components) -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="monitor_purchase.js" defer></script>
     </head>
     <body>
         <div class="container">
