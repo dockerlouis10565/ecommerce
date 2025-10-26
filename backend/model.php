@@ -272,6 +272,12 @@ function gather_stock_info($path){
         }
     }
 }
+#product, gender, genre, agegroup, quantity
+function getStockData(){
+    $stmt = getCn()->prepare("SELECT * FROM `stocks`");
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 function uploadFiles($path) {
     $reelpath = realpath($path);
     if (!$reelpath || !is_dir($reelpath)) return;

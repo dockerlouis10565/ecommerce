@@ -10,7 +10,11 @@ document.addEventListener("DOMContentLoaded", async function() {
         return;
     }
     const data = await response.json();
-    data.forEach(item => {
-        console.log(`Product: ${item.product}, Gender: ${item.gender}, Genre: ${item.genre}, Age Group: ${item.agegroup}, Quantity: ${item.quantity}`);
+    const stockdiv = document.getElementById('stock');
+    stockdiv.addEventListener('click', () => {
+        
     });
+    /**data.forEach(item => {
+        //console.log(`Product: ${item.product}, Gender: ${item.gender}, Genre: ${item.genre}, Age Group: ${item.agegroup}, Quantity: ${item.quantity}`);
+    });**/
 });
