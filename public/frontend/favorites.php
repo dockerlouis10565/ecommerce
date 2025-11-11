@@ -74,13 +74,17 @@ align-items: center;
 grid-area: main;
 border: 5px solid yellow;
 }
-.maindiv {
-width: 80%;
+main .profile{
 display: flex;
-flex-flow: row wrap;
+flex-flow: column nowrap;
 justify-content: center;
-align-items: flex-start;
-margin: auto;
+align-items: center;
+margin: 20px auto;
+border: 1px solid green;
+padding: 10px;
+border-radius: 5px;
+width: 80%;
+height: auto;
 }
 footer {
 display: grid;
@@ -110,7 +114,6 @@ filter: grayscale(50%); /* Apply grayscale effect */
 transition: transform 3s ease-in-out;
 }
 
-
 img:hover {
       z-index: 1;
       transform: scale(1.5); /* Slight zoom on hover */
@@ -130,31 +133,27 @@ img:hover {
                 <div class="dropdown">
                     <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"> product categories </button>
                     <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="../backend/controller.php?action=beauty_and_skincare">beauty and skincare</a></li>
-                        <li><a class="dropdown-item" href="../backend/controller.php?action=clothing_and_accessories">clothing and accessories </a></li>                       
-                        <li><a class="dropdown-item" href="../backend/controller.php?action=footwear">footwear</a></li>
-                        <li><a class="dropdown-item" href="../backend/controller.php?action=household">household items</a></li>
-                        <li><a class="dropdown-item" href="../backend/controller.php?action=occassional">occassional items</a></li>
+                        <li><a class="dropdown-item" href="../backend/controller.php?act=beauty_and_skincare">beauty and skincare</a></li>
+                        <li><a class="dropdown-item" href="../backend/controller.php?act=clothing_and_accessories">clothing and accessories </a></li>                       
+                        <li><a class="dropdown-item" href="../backend/controller.php?act=footwear">footwear</a></li>
+                        <li><a class="dropdown-item" href="../backend/controller.php?act=household_items">household items</a></li>
+                        <li><a class="dropdown-item" href="../backend/controller.php?act=occassional_items">occassional items</a></li>
                     </ul>
                 </div>
-
                 <input type="search" name="search" placeholder="search" style="height: 95%; border-radius: 10px;" >
                 <div class="dropdown">
                     <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"> settings </button>
                     <ul class="dropdown-menu">
                         <li><a class="dropdown-item" href="#">theme</a></li>
                         <li><a class="dropdown-item" href="#"> client preferrences</a></li>
-                        <li><a class="dropdown-item" href="#">other </a></li>
+                        <li><a class="dropdown-item" href="../backend/controller.php?act=fetch_cookie">cart </a></li>
                     </ul>
                 </div>
                 <div class="dropdown">
                     <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"> client info </button>
-                    <ul class="dropdown-menu">                      
-                        <li>
-                            <a class="dropdown-item" href="../backend/controller.php?act=edit_profile&callerDetail=<?php echo urlencode($_SERVER["PHP_SELF"]); ?>">
-                                edit/view profile 
-                            </a>
-                        </li>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="../backend/controller.php?act=edit_profile">profile</a></li>
+                        <li><a class="dropdown-item" href="../backend/controller.php?act=edit_profile">edit profile </a></li>
                         <li><a class="dropdown-item" href="../backend/controller.php?act=fetch_cart"> client cart</a></li>
                         <li><a class="dropdown-item" href="../backend/controller.php?act=fetch_favorite"> client favorite</a></li>
                         <li><a class="dropdown-item" href="../backend/controller.php?act=logout">logout</a></li>
@@ -167,34 +166,38 @@ img:hover {
             
         </section>
         <main>
-            <div class="row row-cols-1 row-cols-md-5 g-4">
-                <?php
-                if(!isset($_SESSION["display_favorite"]) || !$_SESSION["display_favorite"]) {
-                    $result = isset($_SESSION['product_paths']) ? $_SESSION['product_paths'] : [];
-
-                foreach ($result as $path) {
-                    
-                    $fullPath = realpath($path);
-                    if ($fullPath && file_exists($fullPath)) {
-                        $mime = mime_content_type($fullPath);
-                        $data = base64_encode(file_get_contents($fullPath));
-                        #$newPath = str_replace("C", "!", $fullPath);
-                        echo "<div class='col' >
-                                <div class='card'>
-                                    <img src='data:$mime;base64,$data' id='$fullPath' onmouseover='handleImageClick(this.id)'  class='card-img-top' style='width: 98%; margin: 3px;padding: 0; height: 250px;object-fit: fill;' />
-                                    <div class='card-body' style='display: flex; flex-flow: row nowrap; height:5%;width:95%; justify-content: center; object-fit:cover;'>
-                                       <form method='POST' action='../backend/controller.php?act=details&id=".urlencode(htmlspecialchars($fullPath))."'>
-                                           <input type='hidden' name='path' value='".htmlspecialchars($fullPath)."' />
-                                           <input type='submit' class='btn btn-primary' style='background-color: black; border: 0; ' value='detals'>
-                                       </form>
+            <?php
+                if (isset($_SESSION["display_favorite"]) && $_SESSION["display_favorite"] === true) {
+                    $result = isset($_SESSION['favorite']) ? json_decode($_SESSION['favorite'], true) : [];
+                    if(empty($result)){
+                        echo "<div style='color:red;'>No favorite items added yet.</div>";
+                    }else{
+                        echo "<div class='row row-cols-1 row-cols-md-5 g-4' style='display: flex; flex-flow: row wrap; justify-content: center; align-items: flex-start; width: 100%;'>";
+                        foreach ($result as $path) {
+                            $fullPath = realpath($path);
+                            if ($fullPath && file_exists($fullPath)) {
+                                $mime = mime_content_type($fullPath);
+                                $data = base64_encode(file_get_contents($fullPath));
+                                echo "<div class='col'>
+                                    <div class='card'>
+                                        <img src='data:$mime;base64,$data' id='$fullPath' class='card-img-top' style='width: 98%; margin: 3px;height: 150px;object-fit: fill;' />
+                                        <div class='card-body'>
+                                            <form method='POST' action='../backend/controller.php?act=FavoriteAndCart&id=".urlencode(htmlspecialchars($fullPath))."&boolean=true' style='display: flex; flex-flow: row nowrap; height:auto;width:95%; padding: 1px; justify-content: space-evenly;  object-fit:contain;'>
+                                                <input type='submit' name='Name' class='btn btn-primary' style='background-color: black;  border: 0px;padding: 0px;width: 30%;' value='delete'>
+                                                <input type='submit' name='Name' class='btn btn-primary' style='background-color: black;  border: 0px;padding: 0px;width: auto;' value='to_cart'>
+                                                <input type='submit' name='Name' class='btn btn-primary' style='background-color: black;  border: 0px;padding: 0px;width: 30%;' value='details'>
+                                            </form>
+                                        </div>
                                     </div>
-                                </div>
-                        </div>";
-                    } else {
-                        echo "<div style='color:red;'>Image not found: $path</div>";
+                                </div>";
+                            } else {
+                                echo "<div style='color:red;'>Image not found: $path</div>";
+                            }
+
+                        }
+                        echo "</div>";
                     }
                     
-                }
                 }
             ?>
 
@@ -204,6 +207,6 @@ img:hover {
             </div> 
         </main>
         <footer></footer>
-        <script src="productcategoryjs.js"></script>
+        <!--<script src="productcategoryjs.js"></script>-->
     </body>
 </html> 

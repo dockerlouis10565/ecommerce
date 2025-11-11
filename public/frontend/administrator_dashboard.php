@@ -8,14 +8,15 @@ $message = isset($_GET['error']) ? htmlspecialchars($_GET['error']) : '';
 <html lang='en'>
     <head>
          
-        <link href="view/design1.css" rel="stylesheet">
+        
         <!-- Bootstrap CSS -->
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
         <!-- Bootstrap JavaScript (optional, for interactive components) -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-        <script src="frontend/js/monitor.js" defer></script>
+        <script src="js/monitor.js"></script>
         <style>
             html,body{
+                margin: 0;
                 height: 100vh;
                 width: 100vw;
                 background-color: hsla(179, 66%, 88%, 1.00);
@@ -48,19 +49,22 @@ $message = isset($_GET['error']) ? htmlspecialchars($_GET['error']) : '';
                 margin: 6px;
             }
             .right .block{
-                display: block;
+                display: flex;
+                flex-flow: row wrap;
+                justify-content: space-evenly;
+                align-items: center;
             }
         </style>
     </head>
     <body>
         <div class="left">
-            <div id="stock" style="color: gold; cursor: pointer;" onclick="getStockData()"> stock </div>
+            <div id="stock" style="color: gold; cursor: pointer;"> <button>stock</button> </div>
             <div>first</div>
             <div>first</div>
         </div>
         <div class="right">
-            <div id="display" class="block"> second </div>
-            <div id="display" class="block"> second </div>
+            <div id="display1" class="block"> second </div>
+            <div id="display2" class="block"> second </div>
         </div>
     </body>
 </html>

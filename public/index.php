@@ -19,7 +19,7 @@ session_start();
             <div class="login-content">
                 <div> 
                     <div style="padding: 20px; color: blue;font-size: 32px;"> client signup credentials </div>
-                    <form method ="POST" action ="controller.php?act=signup" >
+                    <form method ="POST" action ="backend/controller.php?act=signup" >
                         First Name <input type="text" name="firstname" class="form-control" id="firstname" placeholder="John" required><br>
                         Last Name <input type="text" name="lastname" class="form-control" id="lastname" placeholder="Doe" required><br>
                         Email <input type="email" name="email"class="form-control" id="email" placeholder="name@example.com" required><br>

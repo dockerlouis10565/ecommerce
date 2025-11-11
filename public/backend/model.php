@@ -1,5 +1,9 @@
 <?php
-require_once('vendor/autoload.php');
+#require_once __DIR__ . '/../../vendor/autoload.php';
+
+#$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../../');
+#$dotenv->load();
+
 use GlobalPayments\Api\ServiceConfigs\Gateways\GpApiConfig;
 use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
@@ -9,26 +13,29 @@ function getCn() {
     static $pdo;
     if (!$pdo) {
         try {
-            $pdo = new PDO("mysql:host=localhost;dbname=ecommerce_db;charset=utf8mb4", "root", "");
+            $pdo = new PDO("mysql:host=localhost;port=3306;dbname=ecommerce_db;charset=utf8mb4", "root", "");
             $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         } catch (PDOException $e) {
-            error_log("Database connection failed: " . $e->getMessage());
+            die("Database connection failed: " . $e->getMessage());
             return null;
         }
     }
     return $pdo;
 }
 function isValidTable($table) {
-    $allowed = ['footwear', 'clothing_and_accessories', 'beauty_and_skincare', 'logintable','household_items', 'occassional_items','stocks','services'];
+    $allowed = ['footwear', 'clothing_and_accessories', 'beauty_and_skincare', 'logintable','household_items', 'occassional_items','stocks','purchases'];
     return in_array($table, $allowed);
 }
 
 function fetchproducts($table){
-    if (!isValidTable($table)) {
+    if (!isValidTable($table) ) {
     echo ("Invalid table name.");
     exit;
     }
-
+    if(in_array($table, ['logintable', 'stocks', 'purchases'])){
+        echo ("Invalid table nam.");
+        exit;
+    }
     $fetchedproducts = getCn()->prepare("select route from $table");
     $fetchedproducts->execute();
     return $fetchedproducts->fetchAll(PDO::FETCH_COLUMN);
@@ -148,7 +155,7 @@ function handleDetails($path){
             $_SESSION['similar_products'] = fetchsimilarproducts($arr[4],$arr1);
             $_SESSION['details'] = array( $arr[7],$price);
             //"C:\Data\mysql\male\footwear\official\teen_youngAdult\image (1).jpg"
-            header("Location: view/detail.php");
+            header("Location: ../frontend/detail.php");
 }
 function get_monitor_purchase_analysis(){
     $tables = showtables();
@@ -171,7 +178,7 @@ function getValidProductPaths() {
     $arr = showtables();
     $result = [];
     foreach ($arr as $table) {
-        if ($table !== 'logintable' && $table !== 'stocks' && $table !== 'services') {
+        if (!in_array($table, ['logintable', 'stocks', 'purchases'])) {
             $products = fetchproducts($table);
             foreach ($products as $path) {
                 if (file_exists($path)) {
@@ -198,7 +205,7 @@ function fetchProductDetails($table, $route) {
 function deleteFalsefilepaths() {
     $tables = showtables();
     foreach ($tables as $table) {
-        if ($table === 'logintable'||$table === 'stocks' || $table === 'services') continue; 
+        if (in_array($table, ['logintable', 'stocks', 'services','purchases'])) continue;
         $stmt = getCn()->prepare("SELECT route FROM `$table`");
         $stmt->execute();
         $paths = $stmt->fetchAll(PDO::FETCH_COLUMN);
@@ -212,35 +219,17 @@ function deleteFalsefilepaths() {
     // If all paths exist, return true
     return true;
 }
-function record_purchase($a,$b){
-    
-    
-    $stmt = getCn();
-    foreach ($a as $key => $value) {
-        if (!is_array($value)) {
-            continue; // Skip the last element
-        }else{
-        $insert = $stmt->prepare("INSERT INTO `purchases` (transaction_id, purchase_date, email, mobile_number, account_name, price,shipping_address, postal_code, payment_method, product_category, product_name,gender, genre, agegroup) VALUES (:transaction_id, :purchase_date, :email, :mobile_number, :account_name, :price, :shipping_address, :postal_code, :payment_method, :product_category, :product_name, :gender, :genre, :agegroup)");
-        $insert->execute([
-        "transaction_id" => $b[-1],
-        "purchase_date" => $b[-2],
-        "email" => $b[0],
-        "mobile_number" => $b[3],
-        "account_name" => $b[4],
-        "price" => $b[-1],
-        "shipping_address" => $b[1],
-        "postal_code" => $b[2],
-        "payment_method" => $b[5],
-        "product_category" => $a[0],
-        "product_name" => $a[-1],
-        "gender" => $a[2],
-        "genre" => $a[3],
-        "agegroup" => $a[4]
-        ]);
+function record_purchase($a, $b) { 
+    foreach ($a as $arr) {
+        $stmt = getCn();
+        if (!is_array($arr)) {
+            continue; // Skip non-array elements
         }
+        $insert = $stmt->prepare("INSERT INTO `purchases` (transaction_id, purchase_date, email, mobile_number, account_name, price, shipping_address, postal_code, payment_method, product_category, product_name, gender, genre, agegroup) VALUES (:transaction_id, :purchase_date, :email, :mobile_number, :account_name, :price, :shipping_address, :postal_code, :payment_method, :product_category, :product_name, :gender, :genre, :agegroup)");
+        $insert->execute(["transaction_id"=>$b[8],"purchase_date"=>$b[6],"email"=>$b[0],"mobile_number"=>$b[3],"account_name"=>$b[4],"price"=>$b[7],"shipping_address"=>$b[1],"postal_code"=>$b[2],"payment_method"=>$b[5],"product_category"=>$arr[0],"product_name"=>$arr[4],"gender"=>$arr[1],"genre"=>$arr[2],"agegroup"=>$arr[3]]);
     }
-   
 }
+
 function gather_stock_info($path){
     $reelpath = realpath($path);
     if ($reelpath && is_file($reelpath) && $reelpath !== "." && $reelpath !== "..") {
@@ -272,12 +261,81 @@ function gather_stock_info($path){
         }
     }
 }
+function fillstocks() {
+    $stmt = getCn();
+    $validPaths = getValidProductPaths();
+
+    foreach ($validPaths as $path) {
+        $parts = (DIRECTORY_SEPARATOR === '/') ? explode('/', $path) : explode('\\', $path);
+        if (!is_file($path)) {
+            continue; // Skip malformed paths
+        }
+
+        $product = $parts[4];
+        $gender = $parts[3];
+        $genre = $parts[5];
+        $agegroup = $parts[6];
+
+        $fetched = $stmt->prepare("SELECT * FROM `stocks` WHERE product = :product AND gender = :gender AND genre = :genre AND agegroup = :agegroup");
+        $fetched->execute(["product" => $product,"gender" => $gender,"genre" => $genre,"agegroup" => $agegroup]);
+        $rows = $fetched->fetchAll(PDO::FETCH_ASSOC);
+
+        if (count($rows) === 0) {
+            $newQty = rand(10000, 100000);
+            $insert = $stmt->prepare("INSERT INTO `stocks` (product, gender, genre, agegroup, quantity) VALUES (:product, :gender, :genre, :agegroup, :quantity)");
+            $insert->execute(["product" => $product,"gender" => $gender,"genre" => $genre,"agegroup" => $agegroup,"quantity" => $newQty]);
+        } 
+        else {
+            $update = $stmt->prepare("UPDATE `stocks` SET quantity = quantity + 1 WHERE product = :product AND gender = :gender AND genre = :genre AND agegroup = :agegroup");
+            $update->execute(["product" => $product,"gender" => $gender,"genre" => $genre,"agegroup" => $agegroup]);
+               
+        }
+    }
+}
+
 #product, gender, genre, agegroup, quantity
 function getStockData(){
     $stmt = getCn()->prepare("SELECT * FROM `stocks`");
     $stmt->execute();
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
+function update_stocks($data) {
+    if (empty($data)) return;
+    foreach ($data as $item) {
+        $stmt = getCn();
+        $update = $stmt->prepare("UPDATE `stocks` SET quantity = quantity - 1 WHERE product = :product AND gender = :gender AND genre = :genre AND agegroup = :agegroup");
+        $update->bindParam(':product', $item[0]);
+        $update->bindParam(':gender', $item[1]);
+        $update->bindParam(':genre', $item[2]);
+        $update->bindParam(':agegroup', $item[3]);
+        $update->execute();
+    }
+}
+function fetchspecificData($gender, $genre, $agegroup, $id) {
+    $table = $id;
+    if (!isValidTable($table)) {
+        echo ("Invalid table name.");
+        exit;
+    }
+
+    $stmt = null;
+
+    if (!empty($gender) && !empty($genre) && !empty($agegroup)) {
+        $stmt = getCn()->prepare("SELECT route FROM `$table` WHERE gender = :gender AND genre = :genre AND agegroup = :agegroup");
+        $stmt->execute(["gender" => $gender, "genre" => $genre, "agegroup" => $agegroup]);
+    } elseif (!empty($gender) && !empty($genre)) {
+        $stmt = getCn()->prepare("SELECT route FROM `$table` WHERE gender = :gender AND genre = :genre");
+        $stmt->execute(["gender" => $gender, "genre" => $genre]);
+    } elseif (!empty($gender)) {
+        $stmt = getCn()->prepare("SELECT route FROM `$table` WHERE gender = :gender");
+        $stmt->execute(["gender" => $gender]);
+    } else {
+        return [];
+    }
+
+    return $stmt->fetchAll(PDO::FETCH_COLUMN);
+}
+
 function uploadFiles($path) {
     $reelpath = realpath($path);
     if (!$reelpath || !is_dir($reelpath)) return;
@@ -321,6 +379,7 @@ function credit_card_payment($arr){
             'client_name'=>isset($arr['account_name']) ? $arr['account_name'] : $_SESSION['user']['firstname'].' '.$_SESSION['user']['lastname']
         ];
     #End of testing purposes only.
+/*
 $config = new GpApiConfig();
 $config->appId = getenv('GP_APP_ID');
 $config->appKey = getenv('GP_APP_KEY');
@@ -427,14 +486,16 @@ function update_stocks($arr){
       $update->bindParam(':agegroup', $item[3]);
       $update->execute();
    }
+*/
 }
+
 function process_payment($payment_credentials){
     if($payment_credentials['payment_method'] === 'credit_card'){
        return credit_card_payment($payment_credentials);
     }
 }
 
-# (1) public methods can only be called after INSTANTIATION of the class-even if the are to be called with the same class DECLARATION.
+# (1) public methods can be called even without INSTANTIATION of the class-even if the are to be called within the same class DECLARATION.
 #       public property or method can be accessed from outside the class declaration using an instance B of the class A.
 # (2) static methods can be called without INSTANTIATION of the class. 
 #    an instance B of class A can call properties or methods of class A outside(allowed but not recommended) or within the class A declaration.
