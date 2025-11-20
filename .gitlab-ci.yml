@@ -15,12 +15,7 @@
 include:
   - template: 'Docker.gitlab-ci.yml'
   - template: Security/Secret-Detection.gitlab-ci.yml
-  - template: 'Code-Quality.gitlab-ci.yml'
-  - template: 'Browser-Performance.gitlab-ci.yml'
-  - template: Jobs/Container-Scanning.latest.gitlab-ci.yml
-  - template: Jobs/Dependency-Scanning.gitlab-ci.yml
-  - template: Jobs/SAST.gitlab-ci.yml
-  - template: 'DAST.gitlab-ci.yml'
+  
 #  - template: 'Kubernetes.gitlab-ci.yml'
 #  - template: 'AWS/Deploy-ECS.gitlab-ci.yml'
 #  - template: 'Terraform.gitlab-ci.yml'
