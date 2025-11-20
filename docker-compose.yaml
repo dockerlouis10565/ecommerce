@@ -39,10 +39,10 @@ services:
     networks:
       - app-network 
   app:
-    image: httpd:latest
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: dockerlouis10565/ecommerce:latest
+    #build:
+    #  context: .
+    #  dockerfile: Dockerfile
     container_name: app_service
     networks:
       - app-network
