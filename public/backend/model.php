@@ -490,7 +490,7 @@ function update_stocks($arr){
 }
 
 function process_payment($payment_credentials){
-    if($payment_credentials['payment_method'] === 'credit_card'){
+    if($payment_credentials['payment_method'] === 'credit_card'){ 
        return credit_card_payment($payment_credentials);
     }
 }
@@ -498,7 +498,7 @@ function process_payment($payment_credentials){
 # (1) public methods can be called even without INSTANTIATION of the class-even if the are to be called within the same class DECLARATION.
 #       public property or method can be accessed from outside the class declaration using an instance B of the class A.
 # (2) static methods can be called without INSTANTIATION of the class. 
-#    an instance B of class A can call properties or methods of class A outside(allowed but not recommended) or within the class A declaration.
+#    an instance B of class A can call static properties or methods of class A outside(allowed but not recommended) or within the class A declaration.
 # (3) private methods can only be called within the class declaration.
 #           an instance B of the class A can only call a private method or property of class A if the instance B is within the class A declaration.
 #           private property or method can be called outside of the class declaration through its instance B if there was another public or static method within the class A declaration that calls that private method or property.

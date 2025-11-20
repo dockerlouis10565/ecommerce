@@ -17,6 +17,11 @@ include:
   - template: Security/Secret-Detection.gitlab-ci.yml
   - template: 'Code-Quality.gitlab-ci.yml'
   - template: 'Browser-Performance.gitlab-ci.yml'
+  - template: Jobs/Container-Scanning.latest.gitlab-ci.yml
+  - template: Jobs/Dependency-Scanning.gitlab-ci.yml
+  - template: Jobs/SAST.gitlab-ci.yml
+  - template: 'DAST.gitlab-ci.yml'
+  - template: 'Security/License-Scanning.gitlab-ci.yml'
 #  - template: 'Kubernetes.gitlab-ci.yml'
 #  - template: 'AWS/Deploy-ECS.gitlab-ci.yml'
 #  - template: 'Terraform.gitlab-ci.yml'
@@ -24,6 +29,7 @@ include:
 #  - template: 'Heroku.gitlab-ci.yml'
 variables:
  SECRET_DETECTION_ENABLED: 'true'
+ DAST_VERSION: 6.3.0
 #secret_detection:
 #  stage: secret-detection
 
@@ -33,36 +39,41 @@ variables:
 stages:
   - build
   - test
-  - packaging
   - deploy
 
+# -------------------
+# Build Stage
+# -------------------
 build:
   stage: build
-  image: docker:latest
+  image: docker:cli 
   services:
     - docker:dind
   before_script:
-    - apk update
-    - apk add --no-cache docker-cli
-    - docker login -u "$DOCKER_HUB_USERNAME" -p "$DOCKER_HUB_TOKEN"
+    # Login to Docker Hub
+    #- echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USER" --password-stdin
+    - docker login -u "$DOCKER_USER" -p "$DOCKER_PASSWORD" $CI_REGISTRY
   script:
-    - docker build -t dockerlouis10565/edsafullstack:latest .
-    - docker tag dockerlouis10565/edsafullstack:latest dockerlouis10565/edsafullstack:$CI_COMMIT_SHORT_SHA
-    - docker push dockerlouis10565/edsafullstack:latest
-    - docker push dockerlouis10565/edsafullstack:$CI_COMMIT_SHORT_SHA
-  after_script:
-    - docker logout
-    - docker image prune -f
-    - rm -f .env .env.gpg || true
-    - rm -rf /tmp/* || true
+    -|
+    if [[ "$CI_COMMIT_BRANCH" == "$CI_DEFAULT_BRANCH" ]]; then
+      docker buildx build --provenance=true --sbom=true --push \
+        -t "$DOCKER_IMAGE_NAME" \
+        -t "$DOCKER_IMAGE_NAME:$CI_COMMIT_SHORT_SHA" \
+        -t "$DOCKER_IMAGE_NAME:latest" .
+    else
+      docker buildx build --provenance=true --sbom=true --push \
+        -t "$DOCKER_IMAGE_NAME" \
+        -t "$DOCKER_IMAGE_NAME:$CI_COMMIT_SHORT_SHA" .
+    fi
   rules:
-    - if: $CI_COMMIT_BRANCH == "main" || $CI_PIPELINE_SOURCE == "push"
-      changes:
+    - if: $CI_COMMIT_BRANCH
+      exists:
         - Dockerfile
-        - '**/*'
-      when: always
-    - when: never
 
+
+# -------------------
+# Test Stage
+# -------------------
 test:
   stage: test
   image: php:8.0-cli
@@ -70,60 +81,44 @@ test:
     - mysql:latest
     - redis:7
   before_script:
-    - apt-get update && apt-get install -y curl jq git gnupg
-    - test -f .env && echo ".env file detected" || echo "⚠️ .env file missing"
-    - grep -i 'password\|secret\|token' .env || echo "✅ No exposed secrets in .env"
-    - gpg --version
-    - if [ -f .env.gpg ]; then gpg --quiet --batch --yes --decrypt --passphrase="$GPG_PASSPHRASE" --output .env .env.gpg; fi
+    - apt-get update && apt-get install -y curl jq git gnupg composer
+    - |
+      if [[ "$CI_COMMIT_BRANCH" == "$CI_DEFAULT_BRANCH" ]]; then
+        test -f .env && echo ".env file detected" || echo "⚠️ .env file missing"
+        grep -i 'password\|secret\|token' .env || echo "✅ No exposed secrets in .env"
+        if [ -f .env.gpg ]; then
+          gpg --quiet --batch --yes --decrypt --passphrase="$GPG_PASSPHRASE" --output .env .env.gpg
+        fi
+      fi
   script:
     - php -v
     - composer install --no-interaction --prefer-dist
     - vendor/bin/phpunit --configuration phpunit.xml
-    - curl -s http://localhost:8080/health || echo "⚠️ Healthcheck failed"
   after_script:
     - rm -f .env .env.gpg || true
-    - docker logout || true
   rules:
-    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       when: always
-    - if: $CI_PIPELINE_SOURCE == "push"
-      changes:
-        - '**/*'
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       when: always
-    - when: never
-
-packaging:
-  stage: packaging
-  image: docker:latest
-  services:
-    - docker:dind
-  before_script:
-    - apk update
-    - apk add --no-cache docker-cli
-    - docker login -u "$DOCKER_HUB_USERNAME" -p "$DOCKER_HUB_TOKEN"
-  script:
-    - docker tag yourname/app registry.digitalocean.com/your-registry/app:$CI_COMMIT_SHORT_SHA
-    - docker push registry.digitalocean.com/your-registry/app:$CI_COMMIT_SHORT_SHA
-
+# -------------------
+# Deploy Stage
+# -------------------
 deploy:
   stage: deploy
-  image: docker:latest
+  image: alpine:latest
   before_script:
     - apk add --no-cache openssh
     - mkdir -p ~/.ssh
-    - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+    # Decode the base64 private key back into id_rsa
+    - echo "$SSH_PRIVATE_KEY_B64" | base64 -d > ~/.ssh/id_rsa
     - chmod 600 ~/.ssh/id_rsa
     - ssh-keyscan $SWARM_HOST >> ~/.ssh/known_hosts
-
   script:
     - scp docker-compose.yml $SWARM_USER@$SWARM_HOST:/home/$SWARM_USER/app/
-    - ssh $SWARM_USER@$SWARM_HOST "docker stack deploy -c /home/$SWARM_USER/app/docker-compose.yml edsafullstack"
-
+    - ssh $SWARM_USER@$SWARM_HOST "IMAGE_TAG=$CI_COMMIT_SHORT_SHA docker stack deploy -c /home/$SWARM_USER/app/docker-compose.yml ecommerce"
   after_script:
     - echo "✅ Swarm deployment complete"
-
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
       when: manual
-
-

@@ -80,7 +80,7 @@ session_start();
             </div>
             
             <div class="bArea" style='color: green;font-weight: bold;'>  Total items in cart: <?php echo (isset($_SESSION["cart"]) ? count(json_decode($_SESSION["cart"], true)) : 0); ?>
-            <div class="row row-cols-1 row-cols-md-5 g-4" style="display: flex; flex-flow: row wrap; justify-content: center; align-items: flex-start; width: 100%;">
+            
                 <?php
                 
                 if (isset($_SESSION["cart"]) && $_SESSION["display_cart"] === true) {

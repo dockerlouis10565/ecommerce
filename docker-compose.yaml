@@ -59,7 +59,7 @@ services:
       - .env
     restart: always
     ports:
-      - "8080:80"
+      - "80:80"
     volumes:
       - app_data:/var/www/html
       - ./server.cert:/etc/ssl/certs/server.cert:ro

@@ -11,7 +11,7 @@ COPY package*.json ./
 RUN npm install
 
 # Copy the rest of the frontend application
-COPY ./frontend ./
+COPY ./public/frontend ./
 
 
 # Expose port 80
@@ -30,7 +30,7 @@ LABEL org.opencontainers.image.authors="Louis"
 WORKDIR /var/www/html/backend
 ##
 # Copy backend source code
-COPY ./backend/  ./
+COPY ./public/backend/  ./
 
 # Install system dependencies and PHP extensions
 RUN apt-get update && apt-get install -y \
@@ -52,7 +52,7 @@ RUN chown -R www-data:www-data /var/www
 #=== api ======
 
 #============================ # 🧱 Stage 2: Final Runtime # ============================
-FROM php:8.4-apache AS runtime
+FROM php:8.4.14-apache AS runtime
 
 WORKDIR /var/www/html
 
