@@ -154,7 +154,7 @@ volumes:
     driver: local
     driver_opts:
       type: none
-      device: /c/Data/app_data
+      device: /c/Data/mysql
       o: bind
   db_data:
     driver: local

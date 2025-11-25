@@ -1,79 +1,77 @@
-# Use an official Node.js image as the base image
+# ============================ 🧱 Stage 1: Frontend Builder ============================
 FROM node:22-alpine AS frontend
 
-# Set working directory inside the container
 WORKDIR /var/www/html/frontend
 
-# Copy package.json and package-lock.json first for better caching
+# Copy package files first for caching
 COPY package*.json ./
 
-# Install dependencies including npm packages
-RUN npm install
+# Install dependencies
+RUN npm ci --only=production
 
-# Copy the rest of the frontend application
-COPY ./public/frontend ./
+# Copy frontend source
+COPY ./public/frontend/ ./
 
+# Build static assets (React/Vue/Angular)
+RUN npm run build
 
-# Expose port 80
-EXPOSE 80
-CMD ["npm", "start"]
+# ============================ 🧱 Stage 2: Backend Builder ============================
+FROM php:8.4.2-fpm AS backend
 
-#============================ # 🧱 Stage 1: Backend Builder # ============================
-FROM php:8.4-fpm AS backend
-
-LABEL org.opencontainers.image.title="Ecommerce PHP Backend"
-LABEL org.opencontainers.image.version="1.0.0"
-LABEL org.opencontainers.image.description="Production-grade PHP backend with Composer"
-LABEL org.opencontainers.image.authors="Louis"
-
-# Set working directory
 WORKDIR /var/www/html/backend
-##
-# Copy backend source code
-COPY ./public/backend/  ./
 
 # Install system dependencies and PHP extensions
 RUN apt-get update && apt-get install -y \
-    git unzip curl libzip-dev libpng-dev libonig-dev libxml2-dev libcurl4-openssl-dev libssl-dev libpq-dev libicu-dev \
- && docker-php-ext-install pdo pdo_mysql zip intl mbstring gd \
+    git unzip curl libzip-dev libpng-dev libonig-dev libxml2-dev \
+    libcurl4-openssl-dev libssl-dev libpq-dev libicu-dev \
+ && docker-php-ext-configure gd --with-jpeg --with-freetype \
+ && docker-php-ext-install pdo pdo_mysql zip intl mbstring gd opcache \
  && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Install Composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer
+# Install Composer safely
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Install PHP dependencies
-RUN if [ -f composer.json ]; then \
-    composer install --no-dev --optimize-autoloader --no-interaction --no-progress; \
-    fi
+# Copy composer files first (for caching)
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progress
 
-# Set ownership
-RUN chown -R www-data:www-data /var/www
+# Copy backend source code
+COPY ./public/backend/ ./
 
-#=== api ======
 
-#============================ # 🧱 Stage 2: Final Runtime # ============================
+
+# ============================ 🧱 Stage 3: Final Runtime ============================
 FROM php:8.4.14-apache AS runtime
 
 WORKDIR /var/www/html
 
-# Copy built frontend from previous stage
-COPY --from=frontend /var/www/html/frontend/ ./public/
+# Copy built frontend assets into Apache public dir
+COPY --from=frontend /var/www/html/frontend/dist ./public/
 
-# Copy backend from previous stage
-COPY --from=backend /var/www/html/backend/ ./
+# Copy backend (including vendor) into Apache public dir
+COPY --from=backend /var/www/html/backend ./public/backend
 
-RUN docker-php-ext-install pdo_mysql
+# Copy index.php explicitly into public root
+COPY ./public/index.php ./public/index.php
 
-# Enable Apache mod_rewrite
+# Copy compiled PHP extensions from backend stage
+COPY --from=backend /usr/local/lib/php/extensions /usr/local/lib/php/extensions
+COPY --from=backend /usr/local/etc/php/conf.d /usr/local/etc/php/conf.d
+
+# Enable Apache modules
 RUN a2enmod rewrite headers
 
-# Harden Apache (optional)
+# Harden Apache
 RUN echo "ServerTokens Prod\nServerSignature Off" >> /etc/apache2/conf-enabled/security.conf \
  && echo 'Header always unset X-Powered-By' >> /etc/apache2/conf-enabled/security.conf \
  && echo 'Header set X-Frame-Options "DENY"\nHeader set X-Content-Type-Options "nosniff"\nHeader set Referrer-Policy "no-referrer"' >> /etc/apache2/conf-enabled/security.conf
+
 # Set proper permissions
 RUN chown -R www-data:www-data /var/www/html
 
 EXPOSE 80
+
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
+  CMD curl -f http://localhost/ || exit 1
 
 CMD ["apache2-foreground"]
