@@ -4,8 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-    
+    "start": "echo 'No dev server, just static files'",
+    "clean": "rm -rf dist",
+    "copy": "mkdir -p dist && cp -r frontend/* dist/",
+    "build": "npm run clean && npm run copy"
   },
   "keywords": [],
   "author": "",

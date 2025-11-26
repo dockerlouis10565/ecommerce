@@ -2,6 +2,8 @@
 .env
 .env.local
 .env.production
+.env*
+!.env.example
 
 # === Logs & Runtime ===
 *.log
@@ -9,6 +11,16 @@
 /tmp/
 .cache/
 .phpunit.result.cache
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+pids
+*.pid.lock
+*.seed
 
 # === Vendor & Composer ===
 /vendor/
@@ -20,12 +32,15 @@ db_data/
 *.sqlite
 Dockerfile~  # temp edit files
 docker-compose.override.yaml
+.wrangler/
 
 # === IDE & OS Files ===
 .vscode/
+.vscode/extensions/
 .idea/
 .DS_Store
 Thumbs.db
+AppData/
 
 # === Media Uploads (Optional) ===
 src/uploads/
@@ -34,18 +49,66 @@ src/media/
 # === Testing ===
 tests/_output/
 tests/_data/
+lib-cov
+coverage/
+*.lcov
+.nyc_output
 
 # === CI/CD — Optional workflow cache ===
 .github/workflows/*.yaml~
-node_modules/  # if using frontend stack
+node_modules/
+jspm_packages/
+bower_components/
+web_modules/
 
 # === Misc ===
 *.bak
 *.swp
 *.swo
+.lock-wscript
+build/Release
+*.tgz
+.node_repl_history
+.yarn-integrity
 
-#====This prevents Git from trying to track system files, IDE extensions, and logs.===
+# === TypeScript & Lint Cache ===
+*.tsbuildinfo
+.npm
+.eslintcache
+.stylelintcache
 
-AppData/
-.vscode/extensions/
-*.log
+# === Microbundle Cache ===
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# === Frontend Framework Builds ===
+.parcel-cache
+.next
+out
+.nuxt
+dist
+.cache/
+.vuepress/dist
+.temp
+.docusaurus
+public/   # Uncomment if Gatsby only
+
+# === Serverless & Cloud ===
+.serverless/
+.fusebox/
+.dynamodb/
+
+# === Misc Dev Tools ===
+.tern-port
+.vscode-test
+
+# === Yarn v2 ===
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+.dev.vars*
+!.dev.vars.example
