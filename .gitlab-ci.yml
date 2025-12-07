@@ -29,6 +29,9 @@ variables:
 
 #THIS IS THE END OF THE ORIGINAL CI/CD FILE
 #the test stage must include scanning, authentification, .env detection, encryption
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "main"
 
 stages:
   - build
@@ -84,6 +87,10 @@ test:
           gpg --quiet --batch --yes --decrypt --passphrase="$GPG_PASSPHRASE" --output .env .env.gpg
         fi
       fi
+    - |
+      echo "Checking required env vars..."
+      test -n "$DATABASE_URL" || (echo "❌ DATABASE_URL missing" && exit 1)
+      test -n "$R2_ACCESS_KEY_ID" || (echo "❌ R2_ACCESS_KEY_ID missing" && exit 1)
   script:
     - php -v
     - composer install --no-interaction --prefer-dist
@@ -100,17 +107,14 @@ test:
 # -------------------
 deploy:
   stage: deploy
-  image: alpine:latest
-  before_script:
-    - apk add --no-cache openssh
-    - mkdir -p ~/.ssh
-    # Decode the base64 private key back into id_rsa
-    - echo "$SSH_PRIVATE_KEY_B64" | base64 -d > ~/.ssh/id_rsa
-    - chmod 600 ~/.ssh/id_rsa
-    - ssh-keyscan $SWARM_HOST >> ~/.ssh/known_hosts
+  image: docker:cli
+  services:
+    - docker:dind
+  needs:
+    - ["build","test"]
   script:
-    - scp docker-compose.yml $SWARM_USER@$SWARM_HOST:/home/$SWARM_USER/app/
-    - ssh $SWARM_USER@$SWARM_HOST "IMAGE_TAG=$CI_COMMIT_SHORT_SHA docker stack deploy -c /home/$SWARM_USER/app/docker-compose.yml ecommerce"
+    - docker login -u "$DOCKER_USER" -p "$DOCKER_PASSWORD"
+    - docker push "$DOCKER_IMAGE_NAME:latest"
   after_script:
     - echo "✅ Swarm deployment complete"
   rules:

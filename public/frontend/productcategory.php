@@ -130,11 +130,11 @@ img:hover {
                 <div class="dropdown">
                     <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"> product categories </button>
                     <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="../backend/controller.php?action=beauty_and_skincare">beauty and skincare</a></li>
-                        <li><a class="dropdown-item" href="../backend/controller.php?action=clothing_and_accessories">clothing and accessories </a></li>                       
-                        <li><a class="dropdown-item" href="../backend/controller.php?action=footwear">footwear</a></li>
-                        <li><a class="dropdown-item" href="../backend/controller.php?action=household">household items</a></li>
-                        <li><a class="dropdown-item" href="../backend/controller.php?action=occassional">occassional items</a></li>
+                        <li><a class="dropdown-item" href="../backend/controller.php?act=beauty_and_skincare">beauty and skincare</a></li>
+                        <li><a class="dropdown-item" href="../backend/controller.php?act=clothing_and_accessories">clothing and accessories </a></li>                       
+                        <li><a class="dropdown-item" href="../backend/controller.php?act=footwear">footwear</a></li>
+                        <li><a class="dropdown-item" href="../backend/controller.php?act=household">household items</a></li>
+                        <li><a class="dropdown-item" href="../backend/controller.php?act=occassional">occassional items</a></li>
                     </ul>
                 </div>
 

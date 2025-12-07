@@ -236,6 +236,7 @@ switch ($act) {
             $_SESSION["user"] = isset($_COOKIE["user"]) ? $_COOKIE["user"] : [];
             header("Location: ../frontend/editprofile.php?callerDetail=" . urlencode($callerDetail));
             exit;
+        
         case "logout":
             $_SESSION["user"] = isset($_COOKIE["user"]) ? json_decode($_COOKIE["user"], true) : [];
             logout($_SESSION["user"]["email"]);
