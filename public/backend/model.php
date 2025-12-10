@@ -9,12 +9,35 @@ use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Entities\Exceptions\ApiException;
 use GlobalPayments\Api\PaymentMethods\CreditCardData;
 
+
+
+try {
+    $pdo = new PDO($dsn, $user, $password, [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+    ]);
+    echo "Connected to Railway MySQL!";
+} catch (PDOException $e) {
+    echo "Connection failed: " . $e->getMessage();
+}
+
+
+
+
+
+
 function getCn() {
+    $databaseUrl = getenv("DATABASE_URL");
+    $dbopts = parse_url($databaseUrl);
+    $dsn = "mysql:host={$dbopts['host']};port={$dbopts['port']};dbname=" . ltrim($dbopts["path"], '/');
+    $user = $dbopts['user'];
+    $password = $dbopts['pass'];
     static $pdo;
     if (!$pdo) {
         try {
-            $pdo = new PDO("mysql:host=localhost;port=3306;dbname=ecommerce_db;charset=utf8mb4", "root", "");
-            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $pdo = new PDO($dsn, $user, $password, [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+            ]);
+            return $pdo;
         } catch (PDOException $e) {
             die("Database connection failed: " . $e->getMessage());
             return null;
